@@ -26,6 +26,7 @@ public class IndexController {
   public List<Book> getBooks(@RequestParam(name = "name", required = false) String bookname,
       @RequestParam(name = "author", required = false) String bookauthor,
       @RequestParam(name = "read", required = false) Boolean bookread) {
+
     List<Book> books = new ArrayList<Book>();
 
     Statement statement = null;
@@ -40,26 +41,19 @@ public class IndexController {
       if (bookname != null) {
         // Filter by book name
         query = "SELECT * FROM Books WHERE name LIKE '%" + bookname + "%'";
+        books = Book.find(statement, query);
       } else if (bookauthor != null) {
         // Filter by book author
-        query = "SELECT * FROM Books WHERE author LIKE '%" + bookauthor + "%'";
+        books = Book.findAuthor(statement, bookauthor);
       } else if (bookread != null) {
         // Filter by if the book has been read or not
         Integer read = bookread ? 1 : 0;
         query = "SELECT * FROM Books WHERE read = '" + read.toString() + "'";
+        books = Book.find(statement, query);
       } else {
         // All books
-        query = "SELECT * FROM Books";
+        books = Book.all(statement);
       }
-
-      ResultSet results = statement.executeQuery(query);
-
-      while (results.next()) {
-        Book book = new Book(results.getString("name"), results.getString("author"), (results.getInt("read") == 1));
-
-        books.add(book);
-      }
-
     } catch (SQLException error) {
       error.printStackTrace();
     } finally {
